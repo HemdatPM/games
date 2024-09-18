@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק חידון - הסיור הלימודי</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #9333ea, #fb923c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .header {
+            background-color: #6b21a8;
+            color: white;
+            padding: 1rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .header h3 {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        .content {
+            padding: 2rem;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        button {
+            width: 100%;
+            background-color: #6b21a8;
+            color: white;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #581c87;
+        }
+        .question {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .answer {
+            background-color: #f3e8ff;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .answer:hover {
+            background-color: #e9d5ff;
+        }
+        .answer.correct {
+            background-color: #86efac;
+            color: #14532d;
+        }
+        .answer.incorrect {
+            background-color: #fca5a5;
+            color: #7f1d1d;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        .feedback.correct {
+            background-color: #d1fae5;
+            color: #064e3b;
+        }
+        .feedback.incorrect {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .score {
+            background-color: #fff7ed;
+            color: #9a3412;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>האקדמית חמדת</h1>
+            <h2>השתלמות - הסיור הלימודי ושילובו בהוראה</h2>
+            <h3>עקרונות בתכנון הסיור הלימודי</h3>
+        </div>
+        <div class="content">
+            <div id="start-screen">
+                <input type="text" id="name-input" placeholder="הכנס את שמך">
+                <button id="start-button">התחל במשחק</button>
+            </div>
+            <div id="quiz-screen" class="hidden">
+                <div class="score" id="score-display">ניקוד: 0</div>
+                <div class="question" id="question-text"></div>
+                <div class="answers" id="answers-container"></div>
+                <div class="feedback hidden" id="feedback"></div>
+                <button id="next-button" class="hidden">לשאלה הבאה</button>
+            </div>
+            <div id="result-screen" class="hidden">
+                <h2>תוצאות המשחק</h2>
+                <p id="final-score"></p>
+                <p id="feedback-text"></p>
+                <button id="restart-button">שחק שוב</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const questions = [
+            {
+                question: "מהו אחד היתרונות המרכזיים של הסיור הלימודי?",
+                answers: [
+                    "שינוי בסביבת הלמידה",
+                    "חיסכון בעלויות",
+                    "הפחתת עומס על המורים",
+                    "הארכת יום הלימודים"
+                ],
+                correct: 0
+            },
+            {
+                question: "על מה מבוססת הלמידה החוץ-כיתתית?",
+                answers: [
+                    "למידה פרונטלית",
+                    "למידה חווייתית",
+                    "למידה מקוונת",
+                    "למידה תיאורטית"
+                ],
+                correct: 1
+            },
+            {
+                question: "מהו אחד ההיבטים החינוכיים החשובים בסיור לימודי?",
+                answers: [
+                    "הפחתת זמן מסך",
+                    "למידה פסיבית",
+                    "למידה פעילה",
+                    "הימנעות מאינטראקציה חברתית"
+                ],
+                correct: 2
+            },
+            {
+                question: "מה מאפשרות האינטראקציות החברתיות בסיור הלימודי?",
+                answers: [
+                    "הפחתת עומס על המורים",
+                    "הגברת המעורבות הרגשית והחברתית בלמידה",
+                    "הקטנת זמן הלמידה",
+                    "הפחתת הצורך בתכנון מוקדם"
+                ],
+                correct: 1
+            },
+            {
+                question: "מהו תפקיד המורה בסיור הלימודי?",
+                answers: [
+                    "צופה פסיבי",
+                    "מנחה ומתווך",
+                    "מרצה ראשי",
+                    "מפקח חיצוני"
+                ],
+                correct: 1
+            },
+            {
+                question: "מה חשוב לעשות בסיום הסיור?",
+                answers: [
+                    "לשכוח מהחוויה",
+                    "לערוך מבחן מסכם",
+                    "לערוך פעילויות סיכום",
+                    "לתכנן מיד את הסיור הבא"
+                ],
+                correct: 2
+            },
+            {
+                question: "איזו גישה חינוכית מוזכרת בהקשר של למידה משמעותית בסיור?",
+                answers: [
+                    "הביהביוריזם",
+                    "הקוגניטיביזם",
+                    "הקונסטרוקטיביזם החברתי",
+                    "האקזיסטנציאליזם"
+                ],
+                correct: 2
+            },
+            {
+                question: "מה מהבאים אינו חלק משלבי תכנון וביצוע סיור לימודי?",
+                answers: [
+                    "מיפוי תכנית הלימודים",
+                    "בחירת נושא לימוד עיקרי",
+                    "הכנת משימות לתלמידים",
+                    "קביעת ציונים סופיים"
+                ],
+                correct: 3
+            },
+            {
+                question: "איזו השפעה יש לסיור הלימודי על הזיכרון של התלמידים?",
+                answers: [
+                    "אין השפעה",
+                    "משפר את הזיכרון לטווח קצר בלבד",
+                    "מחליש את הזיכרון",
+                    "משפר את הזיכרון וההבנה ארוכת הטווח"
+                ],
+                correct: 3
+            },
+            {
+                question: "מהי אחת המטרות של הכנה מוקדמת לקראת הסיור?",
+                answers: [
+                    "להפחית את ההתרגשות של התלמידים",
+                    "להכין את התלמידים מבחינה קוגניטיבית ופסיכולוגית",
+                    "לבטל את הצורך בהסברים במהלך הסיור",
+                    "להחליף את הסיור בלמידה בכיתה"
+                ],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let playerName = "";
+
+        const startScreen = document.getElementById("start-screen");
+        const quizScreen = document.getElementById("quiz-screen");
+        const resultScreen = document.getElementById("result-screen");
+        const nameInput = document.getElementById("name-input");
+        const startButton = document.getElementById("start-button");
+        const questionText = document.getElementById("question-text");
+        const answersContainer = document.getElementById("answers-container");
+        const feedback = document.getElementById("feedback");
+        const nextButton = document.getElementById("next-button");
+        const scoreDisplay = document.getElementById("score-display");
+        const finalScore = document.getElementById("final-score");
+        const feedbackText = document.getElementById("feedback-text");
+        const restartButton = document.getElementById("restart-button");
+
+        startButton.addEventListener("click", startGame);
+        nextButton.addEventListener("click", nextQuestion);
+        restartButton.addEventListener("click", restartGame);
+
+        function startGame() {
+            playerName = nameInput.value.trim();
+            if (playerName) {
+                startScreen.classList.add("hidden");
+                quizScreen.classList.remove("hidden");
+                loadQuestion();
+            }
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            questionText.textContent = `${playerName}, ${question.question}`;
+            answersContainer.innerHTML = "";
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement("button");
+                button.classList.add("answer");
+                button.textContent = answer;
+                button.addEventListener("click", () => selectAnswer(index));
+                answersContainer.appendChild(button);
+            });
+            feedback.classList.add("hidden");
+            nextButton.classList.add("hidden");
+        }
+
+        function selectAnswer(index) {
+            const question = questions[currentQuestion];
+            const answerButtons = answersContainer.children;
+            
+            for (let i = 0; i < answerButtons.length; i++) {
+                answerButtons[i].disabled = true;
+                if (i === question.correct) {
+                    answerButtons[i].classList.add("correct");
+                } else if (i === index) {
+                    answerButtons[i].classList.add("incorrect");
+                }
+            }
+
+            if (index === question.correct) {
+                score += 10;
+                feedback.textContent = "נכון!";
+                feedback.classList.remove("incorrect");
+                feedback.classList.add("correct");
+            } else {
+                feedback.textContent = `לא נכון. התשובה הנכונה היא: ${question.answers[question.correct]}`;
+                feedback.classList.remove("correct");
+                feedback.classList.add("incorrect");
+            }
+
+            scoreDisplay.textContent = `ניקוד: ${score}`;
+            feedback.classList.remove("hidden");
+            nextButton.classList.remove("hidden");
+
+            if (currentQuestion === questions.length - 1) {
+                nextButton.textContent = "סיים משחק";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+            finalScore.textContent = `הניקוד שלך: ${score} מתוך ${questions.length * 10}`;
+            feedbackText.textContent = getFeedback();
+        }
+
+        function getFeedback() {
+            const percentage = (score / (questions.length * 10)) * 100;
+            if (percentage >= 80) return "מצוין! יש לך הבנה מעמיקה של נושא הסיור הלימודי.";
+            if (percentage >= 60) return "טוב מאוד! יש לך ידע טוב בנושא, אך יש מקום לשיפור.";
+            return "כדאי לחזור על החומר. הסיור הלימודי הוא כלי חשוב בהוראה.";
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            score = 0;
+            playerName = "";
+            resultScreen.classList.add("hidden");
+            startScreen.classList.remove("hidden");
+            nameInput.value = "";
+            scoreDisplay.textContent = "ניקוד: 0";
+            nextButton.textContent = "לשאלה הבאה";
+        }
+    </script>
+</body>
+</html>
